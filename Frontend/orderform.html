@@ -2,33 +2,21 @@
 
 <head>
     <!-- Theme CSS -->
-    <link href="css/tuskbox.css" rel="stylesheet">
+    <link href="css/orderform.css" rel="stylesheet">
     
 </head>
        
 <script src="/js/orderform.js"></script>
-<form class="stripe_form">
-  <label class="stripe_label">
-    <span>Name</span>
-    <input name="cardholder-name" class="stripe_field" placeholder="Jane Doe" />
-  </label>
-  <label class="stripe_label">
-    <span>Phone</span>
-    <input class="stripe_field" placeholder="(123) 456-7890" type="tel" />
-  </label>
-  <label class="stripe_label">
-    <span>ZIP code</span>
-    <input name="address-zip" class="stripe_field" placeholder="94110" />
-  </label>
-  <label class="stripe_label">
-    <span>Card</span>
-    <div id="card-element" class="stripe_field"></div>
-  </label>
-  <button class="stripe_button" type="submit">Pay $25</button>
-  <div class="outcome">
-    <div class="error"></div>
-    <div class="success">
-      Success! Your Stripe token is <span class="token"></span>
+<form action="/charge" method="post" id="payment-form">
+    <div class="form-row">
+        <label for="card-element">
+        Credit or debit card
+        </label>
+    <div id="card-element">
+<!-- a Stripe Element will be inserted here. -->
     </div>
+<!-- Used to display Element errors -->
+    <div id="card-errors"></div>
   </div>
+ <button>Submit Payment</button>
 </form>

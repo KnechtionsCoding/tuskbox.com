@@ -1,96 +1,57 @@
-function getDocHeight(doc) {
-    doc = doc || document;
-    // stackoverflow.com/questions/1145850/
-    var body = doc.body, html = doc.documentElement;
-    var height = Math.max( body.scrollHeight, body.offsetHeight, 
-        html.clientHeight, html.scrollHeight, html.offsetHeight );
-    return height;
-}
-
-function setIframeHeight(id) {
-    var ifrm = document.getElementById(id);
-    var doc = ifrm.contentDocument? ifrm.contentDocument: 
-        ifrm.contentWindow.document;
-    ifrm.style.visibility = 'hidden';
-    ifrm.style.height = "10px"; // reset to minimal height ...
-    // IE opt. for bing/msn needs a bit added or scrollbar appears
-    ifrm.style.height = getDocHeight( doc ) + 4 + "px";
-    ifrm.style.visibility = 'visible';
-}
-
 var stripe = Stripe('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
 var elements = stripe.elements();
 
-var card = elements.create('card', {
-  iconStyle: 'solid',
-  style: {
-    base: {
-      iconColor: '#8898AA',
-      color: 'white',
-      lineHeight: '36px',
-      fontWeight: 300,
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-      fontSize: '19px',
+// Custom styling can be passed to options when creating an Element.
+var style = {
+  base: {
+    // Add your base input styles here. For example:
+    fontSize: '16px',
+    lineHeight: '24px'
+  }
+};
 
-      '::placeholder': {
-        color: '#8898AA',
-      },
-    },
-    invalid: {
-      iconColor: '#e85746',
-      color: '#e85746',
-    }
-  },
-  classes: {
-    focus: 'is-focused',
-    empty: 'is-empty',
-  },
-});
+// Create an instance of the card Element
+var card = elements.create('card', {style: style});
+
+// Add an instance of the card Element into the `card-element` <div>
 card.mount('#card-element');
 
-var inputs = document.querySelectorAll('input.field');
-Array.prototype.forEach.call(inputs, function(input) {
-  input.addEventListener('focus', function() {
-    input.classList.add('is-focused');
-  });
-  input.addEventListener('blur', function() {
-    input.classList.remove('is-focused');
-  });
-  input.addEventListener('keyup', function() {
-    if (input.value.length === 0) {
-      input.classList.add('is-empty');
+
+card.addEventListener('change', function(event) {
+  var displayError = document.getElementById('card-errors');
+  if (event.error) {
+    displayError.textContent = event.error.message;
+  } else {
+    displayError.textContent = '';
+  }
+});
+
+// Create a token or display an error when the form is submitted.
+var form = document.getElementById('payment-form');
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  stripe.createToken(card).then(function(result) {
+    if (result.error) {
+      // Inform the user if there was an error
+      var errorElement = document.getElementById('card-errors');
+      errorElement.textContent = result.error.message;
     } else {
-      input.classList.remove('is-empty');
+      // Send the token to your server
+      stripeTokenHandler(result.token);
     }
   });
 });
 
-function setOutcome(result) {
-  var successElement = document.querySelector('.success');
-  var errorElement = document.querySelector('.error');
-  successElement.classList.remove('visible');
-  errorElement.classList.remove('visible');
+function stripeTokenHandler(token) {
+  // Insert the token ID into the form so it gets submitted to the server
+  var form = document.getElementById('payment-form');
+  var hiddenInput = document.createElement('input');
+  hiddenInput.setAttribute('type', 'hidden');
+  hiddenInput.setAttribute('name', 'stripeToken');
+  hiddenInput.setAttribute('value', token.id);
+  form.appendChild(hiddenInput);
 
-  if (result.token) {
-    // Use the token to create a charge or a customer
-    // https://stripe.com/docs/charges
-    successElement.querySelector('.token').textContent = result.token.id;
-    successElement.classList.add('visible');
-  } else if (result.error) {
-    errorElement.textContent = result.error.message;
-    errorElement.classList.add('visible');
-  }
+  // Submit the form
+  form.submit();
 }
-
-card.on('change', function(event) {
-  setOutcome(event);
-});
-
-document.querySelector('form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var form = document.querySelector('form');
-  var extraDetails = {
-    name: form.querySelector('input[name=cardholder-name]').value,
-  };
-  stripe.createToken(card, extraDetails).then(setOutcome);
-});
