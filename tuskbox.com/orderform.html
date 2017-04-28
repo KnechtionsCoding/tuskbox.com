@@ -1,0 +1,28 @@
+<!-- Stripe Form for Payment -->
+
+<head>
+    <!-- Theme CSS -->
+    <link href="css/orderform.css" rel="stylesheet">
+    
+    <!--JS Scripts-->
+
+    <script src="/js/orderform.js"></script>
+    <script src="https://js.stripe.com/v2/"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    
+</head>
+       
+
+<form action="/charge" method="post" id="payment-form">
+    <div class="form-row">
+        <label for="card-element">
+        Credit or debit card
+        </label>
+    <div id="card-element">
+<!-- a Stripe Element will be inserted here. -->
+    </div>
+<!-- Used to display Element errors -->
+    <div id="card-errors"></div>
+  </div>
+ <button>Submit Payment</button>
+</form>
